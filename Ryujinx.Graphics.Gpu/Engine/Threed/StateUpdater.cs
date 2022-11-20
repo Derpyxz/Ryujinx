@@ -34,6 +34,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private ProgramPipelineState _pipeline;
 
+        private bool _vsUsesDrawParameters;
         private bool _vtgWritesRtLayer;
         private byte _vsClipDistancesWritten;
 
@@ -211,7 +212,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             // of the shader for the new state.
             if (_shaderSpecState != null)
             {
-                if (!_shaderSpecState.MatchesGraphics(_channel, GetPoolState(), GetGraphicsState(), false))
+                if (!_shaderSpecState.MatchesGraphics(_channel, GetPoolState(), GetGraphicsState(), _vsUsesDrawParameters, false))
                 {
                     ForceShaderUpdate();
                 }
@@ -239,7 +240,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
 
             // Some draw parameters are used to restrict the vertex buffer size,
-            // but they can't be used on direct draws because their values are unknown in this case.
+            // but they can't be used on indirect draws because their values are unknown in this case.
             // When switching between indirect and non-indirect draw, we need to
             // make sure the vertex buffer sizes are still correct.
             if (_drawState.DrawIndirect != _prevDrawIndirect)
@@ -292,9 +293,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void CommitBindings()
         {
+            var buffers = _channel.BufferManager;
+            var hasUnaligned = buffers.HasUnalignedStorageBuffers;
+
             UpdateStorageBuffers();
 
-            if (!_channel.TextureManager.CommitGraphicsBindings(_shaderSpecState))
+            if (!_channel.TextureManager.CommitGraphicsBindings(_shaderSpecState) || (buffers.HasUnalignedStorageBuffers != hasUnaligned))
             {
                 // Shader must be reloaded.
                 UpdateShaderState();
@@ -1220,6 +1224,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             byte oldVsClipDistancesWritten = _vsClipDistancesWritten;
 
             _drawState.VsUsesInstanceId = gs.Shaders[1]?.Info.UsesInstanceId ?? false;
+            _vsUsesDrawParameters = gs.Shaders[1]?.Info.UsesDrawParameters ?? false;
             _vsClipDistancesWritten = gs.Shaders[1]?.Info.ClipDistancesWritten ?? 0;
 
             if (oldVsClipDistancesWritten != _vsClipDistancesWritten)
@@ -1235,6 +1240,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
         }
 
+        /// <summary>
+        /// Updates bindings consumed by the shader stage on the texture and buffer managers.
+        /// </summary>
+        /// <param name="stage">Shader stage to have the bindings updated</param>
+        /// <param name="info">Shader stage bindings info</param>
         private void UpdateStageBindings(int stage, ShaderProgramInfo info)
         {
             _currentProgramInfo[stage] = info;
@@ -1354,7 +1364,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _state.State.AlphaTestFunc,
                 _state.State.AlphaTestRef,
                 ref attributeTypes,
-                _drawState.HasConstantBufferDrawParameters);
+                _drawState.HasConstantBufferDrawParameters,
+                _channel.BufferManager.HasUnalignedStorageBuffers);
         }
 
         /// <summary>
