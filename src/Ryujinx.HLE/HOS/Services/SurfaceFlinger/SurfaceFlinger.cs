@@ -2,6 +2,7 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu;
+using Ryujinx.Graphics.Shader.Translation;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
 using System;
 using System.Collections.Generic;
@@ -15,8 +16,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
     class SurfaceFlinger : IConsumerListener, IDisposable
     {
-        private const int TargetFps = 60;
-
         private Switch _device;
 
         private Dictionary<long, Layer> _layers;
@@ -36,6 +35,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private int _swapInterval;
         private int _swapIntervalDelay;
+        private bool _targetFpsChanged = true;
 
         private readonly object Lock = new object();
 
@@ -60,6 +60,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         public SurfaceFlinger(Switch device)
         {
             _device = device;
+            _device.TargetFpsChanged += () => _targetFpsChanged = true;
             _layers = new Dictionary<long, Layer>();
             RenderLayerId = 0;
 
@@ -80,19 +81,21 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             _composerThread.Start();
         }
 
+
         private void UpdateSwapInterval(int swapInterval)
         {
             _swapInterval = swapInterval;
 
-            // If the swap interval is 0, Game VSync is disabled.
-            if (_swapInterval == 0)
+            if (_targetFpsChanged)
             {
-                _nextFrameEvent.Set();
-                _ticksPerFrame = 1;
-            }
-            else
-            {
-                _ticksPerFrame = Stopwatch.Frequency / TargetFps;
+                _targetFpsChanged = false;
+                if (_swapInterval == 0)
+                {
+                    _nextFrameEvent.Set();
+                    _ticksPerFrame = 1;
+                }
+                else
+                    _ticksPerFrame = Stopwatch.Frequency / _device.TargetFps;
             }
         }
 
@@ -379,19 +382,14 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                 if (acquireStatus == Status.Success)
                 {
-                    // If device vsync is disabled, reflect the change.
-                    if (!_device.EnableDeviceVsync)
+                    if (_device.TargetFps == -1)
                     {
-                        if (_swapInterval != 0)
-                        {
-                            UpdateSwapInterval(0);
-                        }
+                        UpdateSwapInterval(0);
                     }
-                    else if (item.SwapInterval != _swapInterval)
+                    else
                     {
                         UpdateSwapInterval(item.SwapInterval);
                     }
-
                     PostFrameBuffer(layer, item);
                 }
                 else if (acquireStatus != Status.NoBufferAvailaible && acquireStatus != Status.InvalidOperation)

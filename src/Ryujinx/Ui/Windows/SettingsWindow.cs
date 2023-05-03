@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ namespace Ryujinx.Ui.Windows
         private readonly MainWindow             _parent;
         private readonly ListStore              _gameDirsBoxStore;
         private readonly ListStore              _audioBackendStore;
+        private readonly ListStore              _emulationSpeedStore;
         private readonly TimeZoneContentManager _timeZoneContentManager;
         private readonly HashSet<string>        _validTzRegions;
 
@@ -56,6 +58,16 @@ namespace Ryujinx.Ui.Windows
         [GUI] RadioButton     _hideCursorNever;
         [GUI] RadioButton     _hideCursorOnIdle;
         [GUI] RadioButton     _hideCursorAlways;
+        [GUI] Box             _speedSettingsBox;
+        [GUI] Box             _normalEmulationSpeedBox;
+        [GUI] Box             _fastforwardSpeedBox;
+        [GUI] Box             _turboSpeedBox;
+        [GUI] Label           _normalEmulationSpeedLabel;
+        [GUI] ComboBox        _normalEmulationSpeedSelect;
+        [GUI] Label           _fastforwardSpeedLabel;
+        [GUI] ComboBox        _fastforwardSpeedSelect;
+        [GUI] Label           _turboSpeedLabel;
+        [GUI] ComboBox        _turboSpeedSelect;
         [GUI] CheckButton     _vSyncToggle;
         [GUI] CheckButton     _shaderCacheToggle;
         [GUI] CheckButton     _textureRecompressionToggle;
@@ -314,6 +326,62 @@ namespace Ryujinx.Ui.Windows
             {
                 _custThemeToggle.Click();
             }
+            var emulationSpeedTreeIters = new Dictionary<decimal,TreeIter>();
+            _emulationSpeedStore = new ListStore(typeof(string), typeof(decimal));
+            for (decimal i = 0.1m; i <= 1.0m; i += 0.1m)
+                emulationSpeedTreeIters.Add(i,_emulationSpeedStore.AppendValues($"{(i*100).ToString("F0")}%", i));
+            for (decimal i = 1.25m; i <= 5.0m; i += 0.25m)
+                emulationSpeedTreeIters.Add(i, _emulationSpeedStore.AppendValues($"{(i * 100).ToString("F0")}%", i));
+            for (decimal i = 6.00m; i <= 10.0m; i += 1.0m)
+                emulationSpeedTreeIters.Add(i, _emulationSpeedStore.AppendValues($"{(i * 100).ToString("F0")}%", i));
+            emulationSpeedTreeIters.Add(-1.0m, _emulationSpeedStore.AppendValues($"Unlimited (Vsync off)", -1.0m));
+            _speedSettingsBox.Orientation = Orientation.Vertical;
+            _normalEmulationSpeedLabel = new Label("Normal: ");
+            _normalEmulationSpeedLabel.WidthRequest = 100;
+            _normalEmulationSpeedLabel.Xalign = 0;
+            _normalEmulationSpeedLabel.MarginStart = 5;
+            _normalEmulationSpeedSelect = ComboBox.NewWithModelAndEntry(_emulationSpeedStore);
+            _normalEmulationSpeedSelect.EntryTextColumn = 0;
+            _normalEmulationSpeedSelect.Entry.IsEditable = false;
+            var iter = emulationSpeedTreeIters.ContainsKey(ConfigurationState.Instance.Graphics.NormalEmulationSpeed.Value) ?
+                emulationSpeedTreeIters[ConfigurationState.Instance.Graphics.NormalEmulationSpeed] : emulationSpeedTreeIters[1.0m];
+            _normalEmulationSpeedSelect.SetActiveIter(iter);
+
+            _fastforwardSpeedLabel = new Label("Fast Forward: ");
+            _fastforwardSpeedLabel.WidthRequest = 100;
+            _fastforwardSpeedLabel.Xalign = 0;
+            _fastforwardSpeedLabel.MarginStart = 5;
+            _fastforwardSpeedSelect = ComboBox.NewWithModelAndEntry(_emulationSpeedStore);
+            _fastforwardSpeedSelect.EntryTextColumn = 0;
+            _fastforwardSpeedSelect.Entry.IsEditable = false;
+            iter = emulationSpeedTreeIters.ContainsKey(ConfigurationState.Instance.Graphics.FastForwardEmulationSpeed.Value) ?
+                emulationSpeedTreeIters[ConfigurationState.Instance.Graphics.FastForwardEmulationSpeed] : emulationSpeedTreeIters[1.0m];
+            _fastforwardSpeedSelect.SetActiveIter(iter);
+
+            _turboSpeedLabel = new Label("Turbo: ");
+            _turboSpeedLabel.WidthRequest = 100;
+            _turboSpeedLabel.Xalign = 0;
+            _turboSpeedLabel.MarginStart = 5;
+            _turboSpeedSelect = ComboBox.NewWithModelAndEntry(_emulationSpeedStore);
+            _turboSpeedSelect.EntryTextColumn = 0;
+            _turboSpeedSelect.Entry.IsEditable = false;
+            iter = emulationSpeedTreeIters.ContainsKey(ConfigurationState.Instance.Graphics.TurboEmulationSpeed.Value) ?
+                emulationSpeedTreeIters[ConfigurationState.Instance.Graphics.TurboEmulationSpeed] : emulationSpeedTreeIters[1.0m];
+            _turboSpeedSelect.SetActiveIter(iter);
+
+            _normalEmulationSpeedBox.Add(_normalEmulationSpeedLabel);
+            _normalEmulationSpeedBox.Add(_normalEmulationSpeedSelect);
+            _fastforwardSpeedBox.Add(_fastforwardSpeedLabel);
+            _fastforwardSpeedBox.Add(_fastforwardSpeedSelect);
+            _turboSpeedBox.Add(_turboSpeedLabel);
+            _turboSpeedBox.Add(_turboSpeedSelect);
+
+            _normalEmulationSpeedLabel.Show();
+            _normalEmulationSpeedSelect.Show();
+            _fastforwardSpeedLabel.Show();
+            _fastforwardSpeedSelect.Show();
+            _turboSpeedLabel.Show();
+            _turboSpeedSelect.Show();
 
             // Custom EntryCompletion Columns. If added to glade, need to override more signals
             ListStore tzList = new ListStore(typeof(string), typeof(string), typeof(string));
@@ -663,6 +731,19 @@ namespace Ryujinx.Ui.Windows
             if (_audioBackendSelect.GetActiveIter(out TreeIter activeIter))
             {
                 ConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
+            }
+
+            if (_normalEmulationSpeedSelect.GetActiveIter(out TreeIter normalSpeedIter))
+            {
+                ConfigurationState.Instance.Graphics.NormalEmulationSpeed.Value = (decimal)_emulationSpeedStore.GetValue(normalSpeedIter, 1);
+            }
+            if (_fastforwardSpeedSelect.GetActiveIter(out TreeIter fastForwardSpeedIter))
+            {
+                ConfigurationState.Instance.Graphics.FastForwardEmulationSpeed.Value = (decimal)_emulationSpeedStore.GetValue(fastForwardSpeedIter, 1);
+            }
+            if (_turboSpeedSelect.GetActiveIter(out TreeIter turboSpeedIter))
+            {
+                ConfigurationState.Instance.Graphics.TurboEmulationSpeed.Value = (decimal)_emulationSpeedStore.GetValue(turboSpeedIter, 1);
             }
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);

@@ -749,7 +749,10 @@ namespace Ryujinx.Ava
                                                      ConfigurationState.Instance.Graphics.AspectRatio,
                                                      ConfigurationState.Instance.System.AudioVolume,
                                                      ConfigurationState.Instance.System.UseHypervisor,
-                                                     ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value);
+                                                     ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
+                                                     ConfigurationState.Instance.Graphics.NormalEmulationSpeed,
+                                                     ConfigurationState.Instance.Graphics.FastForwardEmulationSpeed,
+                                                     ConfigurationState.Instance.Graphics.TurboEmulationSpeed);
 
             Device = new Switch(configuration);
         }
@@ -1017,7 +1020,6 @@ namespace Ryujinx.Ava
                     {
                         case KeyboardHotkeyState.ToggleVSync:
                             Device.EnableDeviceVsync = !Device.EnableDeviceVsync;
-
                             break;
                         case KeyboardHotkeyState.Screenshot:
                             ScreenshotRequested = true;
