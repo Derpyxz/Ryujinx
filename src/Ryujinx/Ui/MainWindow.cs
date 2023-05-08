@@ -1183,12 +1183,19 @@ namespace Ryujinx.Ui
         private void SpeedState_Clicked(object sender, ButtonReleaseEventArgs args)
         {
             var currentState = _emulationContext.SpeedState;
+
             if (currentState.HasFlag(SpeedState.Turbo))
+            {
                 _emulationContext.SetSpeedState(SpeedState.Normal);
+            }
             else if (currentState.HasFlag(SpeedState.FastForward))
+            {
                 _emulationContext.SetSpeedState(SpeedState.Turbo);
+            }
             else
+            {
                 _emulationContext.SetSpeedState(SpeedState.FastForward);
+            }
             
             Logger.Info?.Print(LogClass.Application, $"Speed State set to: {_emulationContext.GetSpeedStateStatus()}");
         }

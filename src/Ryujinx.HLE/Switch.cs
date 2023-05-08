@@ -145,43 +145,69 @@ namespace Ryujinx.HLE
         public void SetSpeedState(SpeedState newState)
         {
             SpeedState = newState;
-            this.TargetFps = (int)(this.NormalEmulationSpeed * 60);
+            TargetFps = (int)(NormalEmulationSpeed * 60);
+
             if (SpeedState.HasFlag(SpeedState.FastForward))
-                this.TargetFps = (int)(this.FastForwardEmulationSpeed * 60);
+            {
+                TargetFps = (int)(FastForwardEmulationSpeed * 60);
+            }
+
             if (SpeedState.HasFlag(SpeedState.Turbo))
-                this.TargetFps = (int)(this.TurboEmulationSpeed * 60);
-            
-            //If configuration set to -1, we interpret as unlimited/vsync off.
-            if (this.TargetFps < 0)
-                this.TargetFps = -1;
-            this.TargetFpsChanged?.Invoke();
+            {
+                TargetFps = (int)(TurboEmulationSpeed * 60);
+            }
+
+            // If configuration set to -1, we interpret as unlimited/vsync off.
+            if (TargetFps < 0)
+            {
+                TargetFps = -1;
+            }
+
+            TargetFpsChanged?.Invoke();
         }
 
         public string GetSpeedStateStatus()
         {
             string status = "Normal";
+
             if (SpeedState.HasFlag(SpeedState.FastForward))
+            {
                 status = "Fast Forward";
+            }
+
             if (SpeedState.HasFlag(SpeedState.Turbo))
+            {
                 status = "Turbo";
+            }
+
             return status;
         }
 
         public void ToggleFastForward()
         {
             if (this.SpeedState.HasFlag(SpeedState.FastForward))
+            {
                 this.SpeedState &= ~SpeedState.FastForward;
+            }
             else
+            {
                 this.SpeedState |= SpeedState.FastForward;
+            }
+
             this.SetSpeedState(this.SpeedState);
         }
 
         public void ToggleTurbo()
         {
             if (this.SpeedState.HasFlag(SpeedState.Turbo))
+            {
                 this.SpeedState &= ~SpeedState.Turbo;
+            }
             else
+            {
                 this.SpeedState |= SpeedState.Turbo;
+            }
+
             this.SetSpeedState(this.SpeedState);
         }
 

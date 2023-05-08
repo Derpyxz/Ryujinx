@@ -95,7 +95,9 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     _ticksPerFrame = 1;
                 }
                 else
+                {
                     _ticksPerFrame = Stopwatch.Frequency / _device.TargetFps;
+                }
             }
         }
 
@@ -390,6 +392,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     {
                         UpdateSwapInterval(item.SwapInterval);
                     }
+
                     PostFrameBuffer(layer, item);
                 }
                 else if (acquireStatus != Status.NoBufferAvailaible && acquireStatus != Status.InvalidOperation)

@@ -737,10 +737,12 @@ namespace Ryujinx.Ui.Windows
             {
                 ConfigurationState.Instance.Graphics.NormalEmulationSpeed.Value = (decimal)_emulationSpeedStore.GetValue(normalSpeedIter, 1);
             }
+
             if (_fastforwardSpeedSelect.GetActiveIter(out TreeIter fastForwardSpeedIter))
             {
                 ConfigurationState.Instance.Graphics.FastForwardEmulationSpeed.Value = (decimal)_emulationSpeedStore.GetValue(fastForwardSpeedIter, 1);
             }
+
             if (_turboSpeedSelect.GetActiveIter(out TreeIter turboSpeedIter))
             {
                 ConfigurationState.Instance.Graphics.TurboEmulationSpeed.Value = (decimal)_emulationSpeedStore.GetValue(turboSpeedIter, 1);

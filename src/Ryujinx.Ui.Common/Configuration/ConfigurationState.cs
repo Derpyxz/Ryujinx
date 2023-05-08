@@ -774,8 +774,8 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.PreferredGpu.Value               = "";
             Graphics.ShadersDumpPath.Value            = "";
             Graphics.NormalEmulationSpeed.Value       = 1.0m;
-            Graphics.FastForwardEmulationSpeed.Value           = 1.5m;
-            Graphics.TurboEmulationSpeed.Value                 = -1.0m;
+            Graphics.FastForwardEmulationSpeed.Value  = 1.5m;
+            Graphics.TurboEmulationSpeed.Value        = -1.0m;
             Logger.EnableDebug.Value                  = false;
             Logger.EnableStub.Value                   = true;
             Logger.EnableInfo.Value                   = true;
@@ -1465,8 +1465,8 @@ namespace Ryujinx.Ui.Common.Configuration
             Graphics.ScalingFilter.Value              = configurationFileFormat.ScalingFilter;
             Graphics.ScalingFilterLevel.Value         = configurationFileFormat.ScalingFilterLevel;
             Graphics.NormalEmulationSpeed.Value       = configurationFileFormat.NormalEmulationSpeed;
-            Graphics.FastForwardEmulationSpeed.Value           = configurationFileFormat.FastForwardEmulationSpeed;
-            Graphics.TurboEmulationSpeed.Value                 = configurationFileFormat.TurboEmulationSpeed;
+            Graphics.FastForwardEmulationSpeed.Value  = configurationFileFormat.FastForwardEmulationSpeed;
+            Graphics.TurboEmulationSpeed.Value        = configurationFileFormat.TurboEmulationSpeed;
             Logger.EnableDebug.Value                  = configurationFileFormat.LoggingEnableDebug;
             Logger.EnableStub.Value                   = configurationFileFormat.LoggingEnableStub;
             Logger.EnableInfo.Value                   = configurationFileFormat.LoggingEnableInfo;
