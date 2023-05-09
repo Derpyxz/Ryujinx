@@ -326,15 +326,23 @@ namespace Ryujinx.Ui.Windows
             {
                 _custThemeToggle.Click();
             }
+
             var emulationSpeedTreeIters = new Dictionary<decimal,TreeIter>();
             _emulationSpeedStore = new ListStore(typeof(string), typeof(decimal));
             for (decimal i = 0.1m; i <= 1.0m; i += 0.1m)
-                emulationSpeedTreeIters.Add(i,_emulationSpeedStore.AppendValues($"{(i*100).ToString("F0")}%", i));
+            {
+                emulationSpeedTreeIters.Add(i, _emulationSpeedStore.AppendValues($"{(i * 100).ToString("F0")}%", i));
+            }
             for (decimal i = 1.25m; i <= 5.0m; i += 0.25m)
+            {
                 emulationSpeedTreeIters.Add(i, _emulationSpeedStore.AppendValues($"{(i * 100).ToString("F0")}%", i));
+            }
             for (decimal i = 6.00m; i <= 10.0m; i += 1.0m)
+            {
                 emulationSpeedTreeIters.Add(i, _emulationSpeedStore.AppendValues($"{(i * 100).ToString("F0")}%", i));
+            }
             emulationSpeedTreeIters.Add(-1.0m, _emulationSpeedStore.AppendValues($"Unlimited (Vsync off)", -1.0m));
+
             _speedSettingsBox.Orientation = Orientation.Vertical;
             _normalEmulationSpeedLabel = new Label("Normal: ");
             _normalEmulationSpeedLabel.WidthRequest = 100;
