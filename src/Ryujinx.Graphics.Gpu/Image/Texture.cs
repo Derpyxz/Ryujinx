@@ -1205,6 +1205,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="caps">Host GPU capabilities</param>
         /// <param name="firstLayer">Texture view initial layer on this texture</param>
         /// <param name="firstLevel">Texture view first mipmap level on this texture</param>
+        /// <param name="flags">Texture search flags</param>
         /// <returns>The level of compatiblilty a view with the given parameters created from this texture has</returns>
         public TextureViewCompatibility IsViewCompatible(
             TextureInfo info,
@@ -1213,11 +1214,12 @@ namespace Ryujinx.Graphics.Gpu.Image
             int layerSize,
             Capabilities caps,
             out int firstLayer,
-            out int firstLevel)
+            out int firstLevel,
+            TextureSearchFlags flags = TextureSearchFlags.None)
         {
             TextureViewCompatibility result = TextureViewCompatibility.Full;
 
-            result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewFormatCompatible(Info, info, caps));
+            result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewFormatCompatible(Info, info, caps, flags));
             if (result != TextureViewCompatibility.Incompatible)
             {
                 result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewTargetCompatible(Info, info, ref caps));
