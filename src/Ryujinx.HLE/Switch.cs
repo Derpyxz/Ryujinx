@@ -26,8 +26,19 @@ namespace Ryujinx.HLE
         public Hid                   Hid               { get; }
         public TamperMachine         TamperMachine     { get; }
         public IHostUiHandler        UiHandler         { get; }
+        public SpeedState            SpeedState        { get; private set; }
 
         public bool EnableDeviceVsync { get; set; } = true;
+
+        public decimal NormalEmulationSpeed { get; set; }
+
+        public decimal FastForwardEmulationSpeed { get; set; }
+
+        public decimal TurboEmulationSpeed { get; set; }
+
+        public int TargetFps { get; private set; } = 60;
+
+        public Action TargetFpsChanged { get; set; }
 
         public bool IsFrameAvailable => Gpu.Window.IsFrameAvailable;
 
@@ -63,6 +74,10 @@ namespace Ryujinx.HLE
             System.EnablePtc                        = Configuration.EnablePtc;
             System.FsIntegrityCheckLevel            = Configuration.FsIntegrityCheckLevel;
             System.GlobalAccessLogMode              = Configuration.FsGlobalAccessLogMode;
+            NormalEmulationSpeed                    = Configuration.NormalEmulationSpeed;
+            FastForwardEmulationSpeed               = Configuration.FastForwardEmulationSpeed;
+            TurboEmulationSpeed                     = Configuration.TurboEmulationSpeed;
+            SetSpeedState(SpeedState.Normal);
         }
 
         public bool LoadCart(string exeFsDir, string romFsFile = null)
@@ -125,6 +140,75 @@ namespace Ryujinx.HLE
         public void EnableCheats()
         {
             FileSystem.ModLoader.EnableCheats(Processes.ActiveApplication.ProgramId, TamperMachine);
+        }
+
+        public void SetSpeedState(SpeedState newState)
+        {
+            SpeedState = newState;
+            TargetFps = (int)(NormalEmulationSpeed * 60);
+
+            if (SpeedState.HasFlag(SpeedState.FastForward))
+            {
+                TargetFps = (int)(FastForwardEmulationSpeed * 60);
+            }
+
+            if (SpeedState.HasFlag(SpeedState.Turbo))
+            {
+                TargetFps = (int)(TurboEmulationSpeed * 60);
+            }
+
+            // If configuration set to -1, we interpret as unlimited/vsync off.
+            if (TargetFps < 0)
+            {
+                TargetFps = -1;
+            }
+
+            TargetFpsChanged?.Invoke();
+        }
+
+        public string GetSpeedStateStatus()
+        {
+            string status = "Normal";
+
+            if (SpeedState.HasFlag(SpeedState.FastForward))
+            {
+                status = "Fast Forward";
+            }
+
+            if (SpeedState.HasFlag(SpeedState.Turbo))
+            {
+                status = "Turbo";
+            }
+
+            return status;
+        }
+
+        public void ToggleFastForward()
+        {
+            if (this.SpeedState.HasFlag(SpeedState.FastForward))
+            {
+                this.SpeedState &= ~SpeedState.FastForward;
+            }
+            else
+            {
+                this.SpeedState |= SpeedState.FastForward;
+            }
+
+            this.SetSpeedState(this.SpeedState);
+        }
+
+        public void ToggleTurbo()
+        {
+            if (this.SpeedState.HasFlag(SpeedState.Turbo))
+            {
+                this.SpeedState &= ~SpeedState.Turbo;
+            }
+            else
+            {
+                this.SpeedState |= SpeedState.Turbo;
+            }
+
+            this.SetSpeedState(this.SpeedState);
         }
 
         public bool IsAudioMuted()

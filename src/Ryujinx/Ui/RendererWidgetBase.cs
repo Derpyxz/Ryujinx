@@ -487,7 +487,7 @@ namespace Ryujinx.Ui
                         }
 
                         StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
-                            Device.EnableDeviceVsync,
+                            Device.GetSpeedStateStatus(),
                             Device.GetVolume(),
                             _gpuBackendName,
                             dockedMode,
@@ -705,6 +705,18 @@ namespace Ryujinx.Ui
                     Device.SetVolume(_newVolume);
                 }
 
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ToggleFastForward) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ToggleFastForward))
+                {
+                    Device.ToggleFastForward();
+                }
+
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ToggleTurbo) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ToggleTurbo))
+                {
+                    Device.ToggleTurbo();
+                }
+
                 _prevHotkeyState = currentHotkeyState;
             }
 
@@ -739,7 +751,9 @@ namespace Ryujinx.Ui
             ResScaleUp = 1 << 5,
             ResScaleDown = 1 << 6,
             VolumeUp = 1 << 7,
-            VolumeDown = 1 << 8
+            VolumeDown = 1 << 8,
+            ToggleFastForward = 1 << 9,
+            ToggleTurbo = 1 << 19
         }
 
         private KeyboardHotkeyState GetHotkeyState()
@@ -789,6 +803,16 @@ namespace Ryujinx.Ui
             if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeDown))
             {
                 state |= KeyboardHotkeyState.VolumeDown;
+            }
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleFastForward))
+            {
+                state |= KeyboardHotkeyState.ToggleFastForward;
+            }
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleTurbo))
+            {
+                state |= KeyboardHotkeyState.ToggleTurbo;
             }
 
             return state;

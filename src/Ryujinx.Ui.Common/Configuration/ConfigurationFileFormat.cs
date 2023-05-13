@@ -14,7 +14,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 47;
+        public const int CurrentVersion = 48;
 
         /// <summary>
         /// Version of the configuration file format
@@ -170,6 +170,21 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Enables or disables Vertical Sync
         /// </summary>
         public bool EnableVsync { get; set; }
+
+        /// <summary>
+        /// Sets target emulation speed when in normal emulation mode
+        /// </summary>
+        public decimal NormalEmulationSpeed { get; set; }
+
+        /// <summary>
+        /// Sets target emulation speed when in fast forward mode
+        /// </summary>
+        public decimal FastForwardEmulationSpeed { get; set; }
+
+        /// <summary>
+        /// Sets target emulation speed when in turbo mode
+        /// </summary>
+        public decimal TurboEmulationSpeed { get; set; }
 
         /// <summary>
         /// Enables or disables Shader cache
