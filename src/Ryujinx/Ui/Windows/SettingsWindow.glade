@@ -7,6 +7,24 @@
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
+  <object class="GtkAdjustment" id="_normalEmulationSpeedCustom">
+    <property name="upper">20</property>
+    <property name="lower">1</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="_fastforwardSpeedCustom">
+    <property name="upper">20</property>
+    <property name="lower">1</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="_turboSpeedCustom">
+    <property name="upper">20</property>
+    <property name="lower">1</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
   <object class="GtkAdjustment" id="_scalingFilterLevel">
     <property name="upper">101</property>
     <property name="step-increment">1</property>
